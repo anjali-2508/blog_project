@@ -37,7 +37,7 @@ class Register(APIView):
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -65,12 +65,12 @@ class login(APIView):
             else:
                 return Response(
                     {"status": "fail", "message": "Invalid username or password"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_400_BAD_REQUEST
                 )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -84,7 +84,7 @@ class CreatePost(APIView):
                         "status": "fail",
                         "message": "Authentication required to create a post",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    status=status.HTTP_401_UNAUTHORIZED
                 )
             title = request.data.get("title")
             content = request.data.get("content")
@@ -146,12 +146,12 @@ class UpdatePost(APIView):
                         "status": "fail",
                         "message": "authentication require to update post",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    status=status.HTTP_401_UNAUTHORIZED
                 )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -172,12 +172,12 @@ class Deletepost(APIView):
                             "status": "fail",
                             "message": "You can only delete your own post",
                         },
-                        status=status.HTTP_401_UNAUTHORIZED,
+                        status=status.HTTP_401_UNAUTHORIZED
                     )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -197,7 +197,7 @@ class Viewpost(APIView):
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal sever error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
 
@@ -230,11 +230,11 @@ class Addcomment(APIView):
                         "status": "fail",
                         "message": "authentication required to add comment",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED,
+                    status=status.HTTP_401_UNAUTHORIZED
                 )
 
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
