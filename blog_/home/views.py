@@ -111,7 +111,6 @@ class CreatePost(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
 # update post
 class UpdatePost(APIView):
     def put(self, request, post_id):
