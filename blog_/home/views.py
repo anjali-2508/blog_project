@@ -5,9 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializer import PostSerializer
-
 from .models import Post, Comment
-
+import re
 
 # Create your views here.
 
@@ -20,14 +19,28 @@ class Register(APIView):
             email = request.data.get("email")
             password = request.data.get("password")
             if not username or not email or not password:
-                return Response({
-                    "status":"fail","message":"username,email and password required"
-                })
-            if len(password) < 8:
-                return Response({"status":"fail","message":"password must be at least 8 character long"})
-            if User.objects.filter(email=email).exists():
                 return Response(
-                    {"status": "fail", "message": "email already exist"})
+                    {
+                        "status": "fail",
+                        "message": "username,email and password required",
+                    }
+                )
+            email_validation = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,7}"
+            if not re.fullmatch(email_validation, email):
+                return Response({"status": "fail", "message": "enter valid email"})
+            if User.objects.filter(email=email).exists():
+                return Response({"status": "fail", "message": "email already exist"})
+            if User.objects.filter(username=username).exists():
+                return Response({"status":"fail","message":"username already exist"})
+            
+            if len(password) < 8:
+                return Response(
+                    {
+                        "status": "fail",
+                        "message": "password must be at least 8 character long",
+                    }
+                )
+            
             user = User.objects.create_user(
                 username=username, email=email, password=password
             )
@@ -37,7 +50,7 @@ class Register(APIView):
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -65,12 +78,12 @@ class login(APIView):
             else:
                 return Response(
                     {"status": "fail", "message": "Invalid username or password"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -84,7 +97,7 @@ class CreatePost(APIView):
                         "status": "fail",
                         "message": "Authentication required to create a post",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
             title = request.data.get("title")
             content = request.data.get("content")
@@ -92,8 +105,8 @@ class CreatePost(APIView):
                 return Response(
                     {"status": "fail", "message": "title and content cannot be empty"}
                 )
-        
-            post = Post.objects.create(user=request.user, title=title, content=content)
+
+            post = Post.objects.create(created_by=request.user.username, title=title, content=content)
             return Response(
                 {
                     "status": "success",
@@ -102,14 +115,16 @@ class CreatePost(APIView):
                         "post_id": post.id,
                         "post_title": post.title,
                         "post_content": post.content,
+                        "created_by": post.created_by,
                     },
                 }
             )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
 
 # update post
 class UpdatePost(APIView):
@@ -117,7 +132,7 @@ class UpdatePost(APIView):
         try:
             if request.user.is_authenticated:
                 post = Post.objects.get(id=post_id)
-                if post.user == request.user:
+                if post.created_by == request.user.username:
                     title = request.data.get("title")
                     content = request.data.get("content")
                     if title is not None:
@@ -138,7 +153,7 @@ class UpdatePost(APIView):
                             "status": "fail",
                             "message": "You can edit only your own post",
                         },
-                        status=status.HTTP_401_UNAUTHORIZED
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
             else:
                 return Response(
@@ -146,12 +161,12 @@ class UpdatePost(APIView):
                         "status": "fail",
                         "message": "authentication require to update post",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -161,7 +176,7 @@ class Deletepost(APIView):
         try:
             if request.user.is_authenticated:
                 post = Post.objects.get(id=post_id)
-                if post.user == request.user:
+                if post.created_by == request.user.username:
                     post.delete()
                     return Response(
                         {"status": "success", "message": "post deleted successfully"}
@@ -172,12 +187,12 @@ class Deletepost(APIView):
                             "status": "fail",
                             "message": "You can only delete your own post",
                         },
-                        status=status.HTTP_401_UNAUTHORIZED
+                        status=status.HTTP_401_UNAUTHORIZED,
                     )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -197,7 +212,7 @@ class Viewpost(APIView):
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal sever error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -230,11 +245,11 @@ class Addcomment(APIView):
                         "status": "fail",
                         "message": "authentication required to add comment",
                     },
-                    status=status.HTTP_401_UNAUTHORIZED
+                    status=status.HTTP_401_UNAUTHORIZED,
                 )
 
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
