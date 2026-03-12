@@ -193,6 +193,12 @@ class Deletepost(APIView):
                         },
                         status=status.HTTP_401_UNAUTHORIZED,
                     )
+            else:
+                return Response(
+                    {
+                        "status":"fail","message":"authentication required for delete post"
+                    }
+                )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},

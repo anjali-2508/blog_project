@@ -132,3 +132,5 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
 }
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
