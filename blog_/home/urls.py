@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("api/user/register", views.Register.as_view(), name="register"),
@@ -8,5 +10,5 @@ urlpatterns = [
     path("api/post/update/<int:post_id>",views.UpdatePost.as_view(),name="update_post"),    
     path("api/post/delete/<int:post_id>",views.Deletepost.as_view(),name="delete_post"),
     path("api/post/list",views.Viewpost.as_view(),name="view_post"),
-    path("api/comment/add",views.Addcomment.as_view(),name="add comment")
-]
+    path("api/comment/add",views.Addcomment.as_view(),name="add comment"),
+    path("api/post/category/<str:category_name>",views.Categorywisepost.as_view(),name="view_post_category")]

@@ -5,8 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializer import PostSerializer
-from .models import Post, Comment
+from .models import Post, Comment, Category
 import re
+from rest_framework.permissions import AllowAny
 
 # Create your views here.
 
@@ -99,14 +100,16 @@ class CreatePost(APIView):
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
+            image = request.FILES.get("image")
             title = request.data.get("title")
             content = request.data.get("content")
-            if not title or not content:
+            category = request.data.get("category")
+            if not title or not content or not category:
                 return Response(
-                    {"status": "fail", "message": "title and content cannot be empty"}
+                    {"status": "fail", "message": "title, content, and category cannot be empty"}
                 )
-
-            post = Post.objects.create(created_by=request.user.username, title=title, content=content)
+            category,created = Category.objects.get_or_create(name=category)
+            post = Post.objects.create(created_by=request.user, title=title, content=content, category=category,image=image)
             return Response(
                 {
                     "status": "success",
@@ -115,7 +118,8 @@ class CreatePost(APIView):
                         "post_id": post.id,
                         "post_title": post.title,
                         "post_content": post.content,
-                        "created_by": post.created_by,
+                        "category": post.category.name,
+                        "created_by": post.created_by.username,
                     },
                 }
             )
@@ -132,12 +136,12 @@ class UpdatePost(APIView):
         try:
             if request.user.is_authenticated:
                 post = Post.objects.get(id=post_id)
-                if post.created_by == request.user.username:
+                if post.created_by == request.user:
                     title = request.data.get("title")
                     content = request.data.get("content")
-                    if title is not None:
+                    if title is not None and title != "":
                         post.title = title
-                    if content is not None:
+                    if content is not None and content != "":
                         post.content = content
                     post.save()
                     return Response(
@@ -176,7 +180,7 @@ class Deletepost(APIView):
         try:
             if request.user.is_authenticated:
                 post = Post.objects.get(id=post_id)
-                if post.created_by == request.user.username:
+                if post.created_by == request.user:
                     post.delete()
                     return Response(
                         {"status": "success", "message": "post deleted successfully"}
@@ -198,6 +202,7 @@ class Deletepost(APIView):
 
 # view all post
 class Viewpost(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         try:
             post = Post.objects.all()
@@ -248,6 +253,32 @@ class Addcomment(APIView):
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
 
+        except Exception as e:
+            return Response(
+                {"status": "error", "message": f"internal server error {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class Categorywisepost(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, category_name):
+        try:
+            category = Category.objects.get(name=category_name)
+            posts = Post.objects.filter(category=category)
+            serializer = PostSerializer(posts, many=True)
+            return Response(
+                {
+                    "status": "success",
+                    "message": "posts retrived successfully",
+                    "data": serializer.data,
+                }
+            )
+        except Category.DoesNotExist:
+            return Response(
+                {"status": "fail", "message": "category not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         except Exception as e:
             return Response(
                 {"status": "error", "message": f"internal server error {str(e)}"},

@@ -4,9 +4,10 @@ from .models import Post
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author=serializers.CharField(source='user.username')
+    created_by = serializers.CharField(source='created_by.username')
+    category=serializers.CharField(source='category.name',allow_null=True)
     class Meta:
         model = Post
-        fields = ['id','title','content','author']
+        fields = ['id','title','category','content','created_by']
         
     
