@@ -24,4 +24,3 @@ class AdminPostSerializer(serializers.ModelSerializer):
         return Like.objects.filter(post=obj).count()
     def get_comments(self,obj):
         return Comment.objects.filter(post=obj).count()
-        
