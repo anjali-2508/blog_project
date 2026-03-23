@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from Admin.serializer import AdminUserSerializer
+from User.models import UserDetails
 
 
 #Get all user
@@ -30,15 +31,16 @@ class GetUser(APIView):
             
 #delete user
 class Deleteuser(APIView):
+    permission_classes=[IsAuthenticated]
     def delete(self,request,user_id):
         try:
             if request.user.userdetails.role != 'admin':
                 return Response({"status":"fail","message":"only admin can access"})
-            user=User.objects.get(id=user_id)
-            if not user.exists():
+            user=User.objects.filter(id=user_id).first()
+            if not user:
                 return Response({
                     "status":"fail",
-                    "message":"users not found"
+                    "message":"user not found"
                 })
             user.delete()
             return Response({"status":"success","message":"user deleted successfully"})

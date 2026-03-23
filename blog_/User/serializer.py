@@ -21,3 +21,15 @@ class DashboardPostSerializer(serializers.ModelSerializer):
         return Like.objects.filter(post=obj).count()
     def get_comments(self,obj):
         return Comment.objects.filter(post=obj).count()
+
+class HomeSerializer(serializers.ModelSerializer):
+    likes = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
+    created_by=serializers.CharField(source='created_by.username')
+    class Meta:
+        model = Post
+        fields = ['post_id', 'created_by','title','post_image','post_link', 'likes', 'comments']
+    def get_likes(self,obj):
+        return Like.objects.filter(post=obj).count()
+    def get_comments(self,obj):
+        return Comment.objects.filter(post=obj).count()

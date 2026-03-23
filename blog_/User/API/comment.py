@@ -77,7 +77,7 @@ class PostComments(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
-        comments = Comment.objects.filter(post_id=post_id).order_by('-comment_id')
+        comments = Comment.objects.filter(post_id=post_id)
         serializer = CommentSerializer(comments, many=True)
         return Response({
             "status": "success",

@@ -9,7 +9,7 @@ class UserDetails(models.Model):
         ('user', 'User'),
     )
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE,related_name='userdetails')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     bio = models.TextField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
@@ -70,7 +70,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
     comment_id = models.AutoField(primary_key=True)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,related_name='comments')
     comment_by = models.ForeignKey(User, on_delete=models.CASCADE)
     parent_comment=models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True)
     comment_text = models.TextField()
@@ -82,7 +82,7 @@ class Comment(models.Model):
         
 class Like(models.Model):
     like_id=models.AutoField(primary_key=True)
-    post=models.ForeignKey(Post,on_delete=models.CASCADE)
+    post=models.ForeignKey(Post,on_delete=models.CASCADE,related_name='likes')
     liked_by=models.ForeignKey(User,on_delete=models.CASCADE)
     created_at=models.DateTimeField(auto_now_add=True)
     

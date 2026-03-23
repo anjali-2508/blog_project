@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from User.models import Post,Comment,Like
 from rest_framework.response import Response
-from User.serializer import DashboardPostSerializer
+from User.serializer import DashboardPostSerializer,HomeSerializer
 
 class viewDashboard(APIView):
     permission_classes = [IsAuthenticated]
@@ -79,7 +79,7 @@ class Home(APIView):
             post=Post.objects.all()
             if not post.exists():
                 return Response({"status":"fail","message":"post not found"})
-            serializer=DashboardPostSerializer(post,many=True)
+            serializer=HomeSerializer(post,many=True)
             return Response({
                 "status":"success",
                 "data":serializer.data

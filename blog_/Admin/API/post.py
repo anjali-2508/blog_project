@@ -17,7 +17,7 @@ class ViewPost(APIView):
             serializer=AdminPostSerializer(post,many=True)
             return Response({"status":"success","data":serializer.data})
         except Exception as e:
-            return Response({"status":"error","message":f"internal server error {str(e)}"})
+            return Response({"status":"error","message":f"internal server error {str(e)}"},status=500)
         
     
 #delete post
