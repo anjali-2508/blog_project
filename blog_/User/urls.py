@@ -2,7 +2,7 @@ from django.urls import path
 from User.API.user import Register,Login
 from User.API.blog import CreatePost,UpdatePost,DeletePost
 from User.API.comment import AddComment,ReplyComment,PostComments,LikePost,DeleteComment
-from User.API.dashboard import viewDashboard,EditProfile,Home
+from User.API.dashboard import viewDashboard,EditProfile,Home,SearchPost
 
 urlpatterns = [
     path("api/user/register", Register.as_view(), name="register"),
@@ -17,4 +17,5 @@ urlpatterns = [
     path("api/comment/delete/<int:comment_id>",DeleteComment.as_view(),name="delete comment"),
     path("api/dashboard",viewDashboard.as_view(),name="view_dashboard"),
     path("api/dashboard/edit",EditProfile.as_view(),name="edit profile"),
-    path("api/Home",Home.as_view(),name="home")]
+    path("api/Home",Home.as_view(),name="home"),
+    path("api/post/search",SearchPost.as_view(),name="search_post")]

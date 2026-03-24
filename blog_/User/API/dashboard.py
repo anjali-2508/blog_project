@@ -87,4 +87,25 @@ class Home(APIView):
         except Exception as e:
             return Response({"status":"error","message":f"internal server error {str(e)}"
             },status=500)
-    
+class SearchPost(APIView):
+    def get(self, request):
+        try:
+            query = request.GET.get('query')
+            if not query:
+                return Response({"status":"fail","message": "query required"},status=400)
+            posts = Post.objects.all()
+            data = []
+            for post in posts:
+                if (
+                    query.lower() in post.title.lower() or
+                    (post.category and query.lower() in post.category.category_name.lower())):
+                    data.append({
+                        "id": post.post_id,
+                        "title": post.title,
+                        "description": post.content,
+                        "category": post.category.category_name if post.category else None
+                    })
+            return Response({"status":"success","data": data})
+        except Exception as e:
+            return Response({"status":"error","message":f"internal server error {str(e)}"
+            },status=500)

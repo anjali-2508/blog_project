@@ -10,10 +10,10 @@ class ViewPost(APIView):
     def get(self,request):
         try:
             if request.user.userdetails.role != 'admin':
-                return Response({"status":"fail","message":"only admin can access"})
+                return Response({"status":"fail","message":"only admin can access"},status=401)
             post=Post.objects.all()
             if not post.exists():
-                return Response({"status":"fail","message":"posts not found"})
+                return Response({"status":"fail","message":"posts not found"},status=404)
             serializer=AdminPostSerializer(post,many=True)
             return Response({"status":"success","data":serializer.data})
         except Exception as e:
@@ -26,11 +26,11 @@ class DeletePost(APIView):
     def delete(self,request,post_id):
         try:
             if request.user.userdetails.role != 'admin':
-                return Response({"status":"fail","message":"only admin can access"})
+                return Response({"status":"fail","message":"only admin can access"},status=401)
             post = Post.objects.filter(post_id=post_id).first()
             if not post:
-                return Response({"status":"fail","message":"post not found"})
+                return Response({"status":"fail","message":"post not found"},status=404)
             post.delete()
             return Response({"status":"success","message":"post deleted successfully"})
         except Exception as e:
-            return Response({"status":"error","message":f"internal server error {str(e)}"})
+            return Response({"status":"error","message":f"internal server error {str(e)}"},status=500)

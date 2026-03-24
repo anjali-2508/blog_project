@@ -12,13 +12,13 @@ class GetUser(APIView):
     def get(self,request):
         try:
             if request.user.userdetails.role != 'admin':
-                return Response({"status":"fail","message":"only admin can access"})
+                return Response({"status":"fail","message":"only admin can access"},status=401)
             user=User.objects.all()
             if not user.exists():
                 return Response({
                     "status":"fail",
                     "message":"users not found"
-                })
+                },status=404)
             serializer=AdminUserSerializer(user,many=True)
             return Response({
                 "status":"success",
@@ -27,7 +27,7 @@ class GetUser(APIView):
         except Exception as e:
             return Response({
                 "status":"error","message":f"internal server error {str(e)}"
-            })
+            },status=500)
             
 #delete user
 class Deleteuser(APIView):
@@ -35,15 +35,15 @@ class Deleteuser(APIView):
     def delete(self,request,user_id):
         try:
             if request.user.userdetails.role != 'admin':
-                return Response({"status":"fail","message":"only admin can access"})
+                return Response({"status":"fail","message":"only admin can access"},status=401)
             user=User.objects.filter(id=user_id).first()
             if not user:
                 return Response({
                     "status":"fail",
                     "message":"user not found"
-                })
+                },status=404)
             user.delete()
             return Response({"status":"success","message":"user deleted successfully"})
         except Exception as e:
-            return Response({"status":"error","message":f"internal server error {str(e)}"})
+            return Response({"status":"error","message":f"internal server error {str(e)}"},status=500)
 

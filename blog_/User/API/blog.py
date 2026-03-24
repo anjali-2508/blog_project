@@ -116,8 +116,8 @@ class DeletePost(APIView):
                     "status":"success","message":"post deleted successully"
                 })
             else:
-                return Response({"status":"fail","message":"you can delete only your post"})
+                return Response({"status":"fail","message":"you can delete only your post"},status=400)
         except Exception as e:
-            return Response({"status":"error","message":f"internal server error {str(e)}"})
+            return Response({"status":"error","message":f"internal server error {str(e)}"},status=500)
         
 

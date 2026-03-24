@@ -30,6 +30,24 @@ class AddComment(APIView):
 
         except Post.DoesNotExist:
             return Response({"status": "fail","message": "Post not found"}, status=404)
+        except Exception as e:
+            return Response({"status":"error","message":f"internal server error {str(e)}"
+            },status=500)
+       
+    def delete(self,request,comment_id):
+        try:
+            comment = Comment.objects.get(comment_id=comment_id)
+            if comment.comment_by==request.user or comment.post.created_by==request.user:
+                comment.delete()
+                return Response({"status":"success","message":"comment deleted successfully"})
+            return Response({"status":"fail",
+                            "message":"you can delete only you comment"},status=404)
+        except Comment.DoesNotExist:
+            return Response({"status":"fail","message":"comment does not exits"})
+        except Exception as e:
+            return Response({
+                "status":"error",
+                "message":f"internal server error {str(e)}"},status=500)
         
 #reply comment
 class ReplyComment(APIView):
@@ -75,31 +93,37 @@ class ReplyComment(APIView):
 #view comments for a post
 class PostComments(APIView):
     permission_classes = [IsAuthenticated]
-
     def get(self, request, post_id):
-        comments = Comment.objects.filter(post_id=post_id)
-        serializer = CommentSerializer(comments, many=True)
-        return Response({
-            "status": "success",
-            "comments": serializer.data})
-
+        try:
+            comments = Comment.objects.filter(post_id=post_id)
+            if not comments:
+                return Response({"message": "no comments found"})
+            serializer = CommentSerializer(comments, many=True)
+            return Response({
+                "status": "success",
+                "comments": serializer.data})
+        except Exception as e:
+            return Response({"status":"error","message":f"internal server error {str(e)}"
+            },status=500)
+            
 #delete comment
 class DeleteComment(APIView):
-    permission_classes=[IsAuthenticated]
-    def delete(self,request,comment_id):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, comment_id):
         try:
             comment = Comment.objects.get(comment_id=comment_id)
-            if comment.comment_by==request.user or comment.post.created_by==request.user:
-                comment.delete()
-                return Response({"status":"success","message":"comment deleted successfully"})
-            return Response({"status":"fail",
-                            "message":"you can delete only you comment"})
+            if comment.comment_by != request.user:
+                return Response({
+                    "status":"fail","message": "you can delete only your comment"})
+            comment.delete()
+            return Response({
+                "status":"success","message": "comment deleted successfully"})
         except Comment.DoesNotExist:
-            return Response({"status":"fail","message":"comment does not exits"})
+            return Response({
+                "status":"fail","message": "comment not found"}, status=404)
         except Exception as e:
             return Response({
-                "status":"error",
-                "message":f"internal server error {str(e)}"},status=500)
+                "status":"error","message": f"internal server error{str(e)}"}, status=500)
         
 #like post
 class LikePost(APIView):
@@ -120,7 +144,7 @@ class LikePost(APIView):
         except Post.DoesNotExist:
             return Response({"status":"fail","message":"post not found"},status=400)
         except Exception as e:
-            return Response({"status":"error","message":f"internal server error {str(e)}"})
+            return Response({"status":"error","message":f"internal server error {str(e)}"},status=500)
             
         
        
